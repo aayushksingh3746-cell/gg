@@ -1,0 +1,1655 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>ROBOkriti 2026 — Robotics Arena</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    /* =========================================================
+       ROOT
+    ========================================================= */
+
+    :root {
+      --void: #050505;
+      --void-2: #080808;
+      --white: #ffffff;
+      --muted: #858585;
+
+      --acid: #B2FF05;
+      --violet: #7B2CBF;
+
+      --glass: rgba(255,255,255,0.055);
+      --glass-strong: rgba(255,255,255,0.085);
+      --border: rgba(255,255,255,0.12);
+
+      --mono: "JetBrains Mono", monospace;
+      --display: "Space Grotesk", sans-serif;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+      background: var(--void);
+    }
+
+    body {
+      min-height: 100vh;
+      background: var(--void);
+      color: var(--white);
+      font-family: var(--display);
+      overflow-x: hidden;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    button {
+      font: inherit;
+    }
+
+    /* =========================================================
+       CRT / SCANLINE OVERLAY
+    ========================================================= */
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      z-index: 9990;
+      pointer-events: none;
+
+      background:
+        repeating-linear-gradient(
+          to bottom,
+          rgba(255,255,255,0.018) 0px,
+          rgba(255,255,255,0.018) 1px,
+          transparent 1px,
+          transparent 4px
+        );
+
+      opacity: 0.35;
+      mix-blend-mode: overlay;
+    }
+
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      z-index: 9989;
+      pointer-events: none;
+
+      background:
+        radial-gradient(
+          ellipse at center,
+          transparent 35%,
+          rgba(0,0,0,0.42) 100%
+        );
+    }
+
+    /* =========================================================
+       NAVIGATION
+    ========================================================= */
+
+    .command-bar {
+      position: fixed;
+      top: 22px;
+      left: 50%;
+      transform: translateX(-50%);
+
+      width: min(1180px, calc(100% - 32px));
+      height: 68px;
+
+      z-index: 1000;
+
+      display: flex;
+      align-items: center;
+      gap: 24px;
+
+      padding: 8px 10px 8px 18px;
+
+      background: rgba(10,10,10,0.62);
+      border: 1px solid rgba(255,255,255,0.13);
+      border-radius: 999px;
+
+      backdrop-filter: blur(22px);
+      -webkit-backdrop-filter: blur(22px);
+
+      box-shadow:
+        0 15px 60px rgba(0,0,0,0.5),
+        inset 0 1px rgba(255,255,255,0.08);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      min-width: 145px;
+    }
+
+    .brand img {
+      width: 106px;
+      max-height: 46px;
+      object-fit: contain;
+      display: block;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 25px;
+      flex: 1;
+    }
+
+    .nav-links a {
+      position: relative;
+
+      font-family: var(--mono);
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+
+      color: #b7b7b7;
+
+      transition:
+        color 0.25s ease,
+        transform 0.25s ease;
+    }
+
+    .nav-links a::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      bottom: -7px;
+      width: 0;
+      height: 1px;
+
+      background: var(--acid);
+
+      transition: width 0.25s ease;
+    }
+
+    .nav-links a:hover {
+      color: var(--white);
+      transform: translateY(-1px);
+    }
+
+    .nav-links a:hover::after {
+      width: 100%;
+    }
+
+    .register-btn {
+      flex-shrink: 0;
+
+      border: 0;
+      border-radius: 999px;
+
+      padding: 14px 21px;
+
+      background: var(--acid);
+      color: #050505;
+
+      font-family: var(--mono);
+      font-size: 10px;
+      font-weight: 800;
+
+      cursor: pointer;
+
+      box-shadow:
+        0 0 0 rgba(178,255,5,0),
+        inset 0 0 0 rgba(255,255,255,0);
+
+      transition:
+        transform 0.25s ease,
+        box-shadow 0.25s ease;
+    }
+
+    .register-btn:hover {
+      transform: translateY(-2px);
+      box-shadow:
+        0 0 28px rgba(178,255,5,0.28),
+        inset 0 0 15px rgba(255,255,255,0.22);
+    }
+
+    /* =========================================================
+       MOBILE NAV
+    ========================================================= */
+
+    .mobile-menu {
+      display: none;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.06);
+      color: white;
+
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+
+      cursor: pointer;
+    }
+
+    /* =========================================================
+       HERO
+    ========================================================= */
+
+    .hero {
+      position: relative;
+      min-height: 100svh;
+      height: 100svh;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      overflow: hidden;
+
+      background: #000;
+    }
+
+    .hero-video {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+
+      overflow: hidden;
+      z-index: 0;
+    }
+
+    .hero-video iframe {
+      position: absolute;
+
+      top: 50%;
+      left: 50%;
+
+      width: 177.78vh;
+      height: 100vh;
+
+      min-width: 100vw;
+      min-height: 56.25vw;
+
+      transform: translate(-50%, -50%);
+      border: 0;
+
+      pointer-events: none;
+    }
+
+    .hero-video::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+
+      background:
+        linear-gradient(
+          180deg,
+          rgba(0,0,0,0.60) 0%,
+          rgba(0,0,0,0.12) 35%,
+          rgba(0,0,0,0.30) 65%,
+          rgba(0,0,0,0.92) 100%
+        );
+    }
+
+    .hero-grid {
+      position: absolute;
+      inset: 0;
+
+      z-index: 1;
+      pointer-events: none;
+
+      opacity: 0.15;
+
+      background-image:
+        linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px);
+
+      background-size: 80px 80px;
+
+      mask-image: linear-gradient(to bottom, black, transparent);
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 5;
+
+      width: min(1200px, calc(100% - 32px));
+
+      text-align: center;
+
+      transform: translateY(-2%);
+    }
+
+    .system-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+
+      margin-bottom: 20px;
+
+      padding: 7px 12px;
+
+      border: 1px solid rgba(178,255,5,0.30);
+      background: rgba(0,0,0,0.4);
+
+      font-family: var(--mono);
+      font-size: 9px;
+      letter-spacing: 0.15em;
+      color: var(--acid);
+
+      backdrop-filter: blur(8px);
+    }
+
+    .system-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+
+      background: var(--acid);
+
+      box-shadow: 0 0 14px var(--acid);
+
+      animation: pulse 1.4s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% {
+        opacity: 1;
+        transform: scale(1);
+      }
+
+      50% {
+        opacity: 0.35;
+        transform: scale(0.7);
+      }
+    }
+
+    .hero-title {
+      font-size: clamp(4.4rem, 14vw, 12.5rem);
+      line-height: 0.78;
+
+      letter-spacing: -0.075em;
+      font-weight: 700;
+
+      text-transform: uppercase;
+
+      user-select: none;
+    }
+
+    .hero-title .hollow {
+      display: block;
+
+      color: transparent;
+
+      -webkit-text-stroke: clamp(1px, 0.15vw, 3px) rgba(255,255,255,0.94);
+
+      text-shadow:
+        0 0 35px rgba(255,255,255,0.05);
+    }
+
+    .hero-title .solid {
+      display: block;
+      color: white;
+
+      text-shadow:
+        0 0 40px rgba(255,255,255,0.12);
+    }
+
+    .hero-subtitle {
+      margin: 30px auto 0;
+
+      max-width: 550px;
+
+      font-family: var(--mono);
+      font-size: 10px;
+      line-height: 1.8;
+
+      color: rgba(255,255,255,0.62);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    /* =========================================================
+       TICKER
+    ========================================================= */
+
+    .ticker {
+      position: absolute;
+      left: 0;
+      bottom: 0;
+
+      width: 100%;
+      height: 44px;
+
+      z-index: 20;
+
+      display: flex;
+      align-items: center;
+
+      overflow: hidden;
+
+      border-top: 1px solid rgba(255,255,255,0.12);
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+
+      background: rgba(0,0,0,0.72);
+      backdrop-filter: blur(14px);
+    }
+
+    .ticker-track {
+      display: flex;
+      width: max-content;
+
+      animation: ticker 24s linear infinite;
+    }
+
+    .ticker-item {
+      white-space: nowrap;
+
+      padding-right: 60px;
+
+      font-family: var(--mono);
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.13em;
+
+      color: rgba(255,255,255,0.72);
+    }
+
+    .ticker-item span {
+      color: var(--acid);
+    }
+
+    @keyframes ticker {
+      from {
+        transform: translateX(0);
+      }
+
+      to {
+        transform: translateX(-50%);
+      }
+    }
+
+    /* =========================================================
+       SECTION COMMON
+    ========================================================= */
+
+    .section {
+      position: relative;
+      padding: 110px 20px;
+      background: var(--void);
+    }
+
+    .section-inner {
+      width: min(1180px, 100%);
+      margin: auto;
+    }
+
+    .eyebrow {
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.14em;
+      color: var(--acid);
+      margin-bottom: 12px;
+    }
+
+    .section-heading {
+      font-size: clamp(2.5rem, 6vw, 5.5rem);
+      line-height: 0.9;
+      letter-spacing: -0.055em;
+      font-weight: 600;
+    }
+
+    .section-description {
+      max-width: 580px;
+      margin-top: 20px;
+
+      color: var(--muted);
+
+      font-size: 14px;
+      line-height: 1.7;
+    }
+
+    /* =========================================================
+       COUNTDOWN
+    ========================================================= */
+
+    .status-section {
+      border-top: 1px solid rgba(255,255,255,0.07);
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+
+      background:
+        radial-gradient(
+          circle at 50% 0%,
+          rgba(123,44,191,0.14),
+          transparent 50%
+        ),
+        #070707;
+    }
+
+    .status-top {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 30px;
+      margin-bottom: 55px;
+    }
+
+    .status-code {
+      font-family: var(--mono);
+      font-size: 9px;
+      color: #555;
+      text-align: right;
+    }
+
+    .countdown {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+
+      border: 1px solid rgba(255,255,255,0.10);
+      background: rgba(255,255,255,0.025);
+    }
+
+    .time-unit {
+      position: relative;
+
+      padding: 35px 25px;
+
+      border-right: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .time-unit:last-child {
+      border-right: 0;
+    }
+
+    .time-value {
+      font-family: var(--mono);
+      font-size: clamp(2.6rem, 7vw, 6.5rem);
+      font-weight: 600;
+      line-height: 1;
+
+      letter-spacing: -0.07em;
+
+      color: var(--white);
+
+      text-shadow:
+        0 0 22px rgba(178,255,5,0.12);
+    }
+
+    .time-label {
+      margin-top: 13px;
+
+      font-family: var(--mono);
+      font-size: 9px;
+      letter-spacing: 0.15em;
+
+      color: #5e5e5e;
+    }
+
+    .time-unit::before {
+      content: "";
+      position: absolute;
+
+      top: 0;
+      left: 0;
+
+      width: 28px;
+      height: 2px;
+
+      background: var(--acid);
+
+      opacity: 0.8;
+    }
+
+    /* =========================================================
+       BATTLEGROUNDS
+    ========================================================= */
+
+    .arena-section {
+      background:
+        radial-gradient(
+          circle at 15% 50%,
+          rgba(178,255,5,0.045),
+          transparent 30%
+        ),
+        #050505;
+    }
+
+    .arena-header {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+
+      margin-bottom: 50px;
+    }
+
+    .arena-index {
+      font-family: var(--mono);
+      font-size: 9px;
+      color: #555;
+    }
+
+    .battlegrounds {
+      display: grid;
+
+      grid-template-columns:
+        repeat(4, minmax(0, 1fr));
+
+      gap: 12px;
+    }
+
+    .battle-card {
+      position: relative;
+
+      min-height: 340px;
+
+      padding: 25px;
+
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+
+      overflow: hidden;
+
+      border: 1px solid rgba(255,255,255,0.10);
+
+      background:
+        linear-gradient(
+          145deg,
+          rgba(255,255,255,0.075),
+          rgba(255,255,255,0.025)
+        );
+
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+
+      transform-style: preserve-3d;
+
+      transition:
+        transform 0.18s ease-out,
+        border-color 0.3s ease,
+        box-shadow 0.3s ease;
+    }
+
+    .battle-card::before {
+      content: "";
+
+      position: absolute;
+      inset: 0;
+
+      background:
+        linear-gradient(
+          135deg,
+          rgba(255,255,255,0.07),
+          transparent 35%
+        );
+
+      pointer-events: none;
+    }
+
+    .battle-card:hover {
+      border-color: rgba(123,44,191,0.8);
+
+      box-shadow:
+        0 20px 50px rgba(0,0,0,0.45),
+        0 0 30px rgba(123,44,191,0.13);
+    }
+
+    .battle-card:nth-child(odd):hover {
+      border-color: rgba(178,255,5,0.75);
+
+      box-shadow:
+        0 20px 50px rgba(0,0,0,0.45),
+        0 0 30px rgba(178,255,5,0.10);
+    }
+
+    .card-number {
+      position: relative;
+      z-index: 2;
+
+      font-family: var(--mono);
+      font-size: 9px;
+      color: #6d6d6d;
+    }
+
+    .card-title {
+      position: relative;
+      z-index: 2;
+
+      margin-top: auto;
+      margin-bottom: 25px;
+
+      font-size: clamp(1.7rem, 3vw, 2.6rem);
+      line-height: 0.92;
+
+      letter-spacing: -0.05em;
+      text-transform: uppercase;
+    }
+
+    .card-status {
+      position: relative;
+      z-index: 2;
+
+      display: inline-flex;
+      align-self: flex-start;
+
+      padding: 7px 9px;
+
+      border: 1px solid rgba(178,255,5,0.25);
+
+      background: rgba(178,255,5,0.045);
+
+      color: var(--acid);
+
+      font-family: var(--mono);
+      font-size: 8px;
+      letter-spacing: 0.04em;
+
+      white-space: nowrap;
+    }
+
+    .battle-card.soccer .card-status {
+      color: #9b9b9b;
+      border-color: rgba(123,44,191,0.4);
+      background: rgba(123,44,191,0.07);
+    }
+
+    .battle-card.soccer:hover .card-title {
+      animation: glitch 0.35s steps(2, end) infinite;
+    }
+
+    .battle-card.soccer:hover .card-status {
+      animation: glitch 0.45s steps(2, end) infinite;
+    }
+
+    @keyframes glitch {
+      0% {
+        transform: translate(0);
+        text-shadow: none;
+      }
+
+      25% {
+        transform: translate(-2px, 1px);
+        text-shadow:
+          2px 0 var(--acid),
+          -2px 0 var(--violet);
+      }
+
+      50% {
+        transform: translate(2px, -1px);
+        text-shadow:
+          -2px 0 var(--acid),
+          2px 0 var(--violet);
+      }
+
+      75% {
+        transform: translate(-1px, -1px);
+      }
+
+      100% {
+        transform: translate(0);
+        text-shadow: none;
+      }
+    }
+
+    /* Decorative card graphic */
+
+    .card-orbit {
+      position: absolute;
+
+      width: 180px;
+      height: 180px;
+
+      right: -60px;
+      top: 45px;
+
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 50%;
+
+      opacity: 0.8;
+    }
+
+    .card-orbit::before,
+    .card-orbit::after {
+      content: "";
+
+      position: absolute;
+      inset: 25px;
+
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 50%;
+    }
+
+    .card-orbit::after {
+      inset: 65px;
+      border-color: rgba(178,255,5,0.25);
+    }
+
+    /* =========================================================
+       FOOTER
+    ========================================================= */
+
+    footer {
+      padding: 45px 20px;
+
+      border-top: 1px solid rgba(255,255,255,0.08);
+
+      background: #030303;
+    }
+
+    .footer-inner {
+      width: min(1180px, 100%);
+      margin: auto;
+
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 25px;
+    }
+
+    .footer-brand {
+      font-size: 18px;
+      font-weight: 600;
+      letter-spacing: -0.04em;
+    }
+
+    .footer-brand span {
+      color: var(--acid);
+    }
+
+    .footer-code {
+      font-family: var(--mono);
+      font-size: 9px;
+      color: #505050;
+    }
+
+    /* =========================================================
+       SYSTEM OVERRIDE
+    ========================================================= */
+
+    .override {
+      position: fixed;
+      inset: 0;
+
+      z-index: 10000;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      background: rgba(178,255,5,0.08);
+
+      pointer-events: none;
+      opacity: 0;
+    }
+
+    .override-message {
+      padding: 25px 35px;
+
+      border: 1px solid var(--acid);
+
+      background: rgba(0,0,0,0.94);
+
+      color: var(--acid);
+
+      font-family: var(--mono);
+      font-size: clamp(10px, 2vw, 15px);
+      font-weight: 700;
+      letter-spacing: 0.12em;
+
+      box-shadow:
+        0 0 60px rgba(178,255,5,0.3);
+
+      transform: scale(0.9);
+    }
+
+    .override.active {
+      animation: overrideFlash 0.5s ease forwards;
+    }
+
+    .override.active .override-message {
+      animation: overrideMessage 0.5s ease forwards;
+    }
+
+    @keyframes overrideFlash {
+      0% {
+        opacity: 0;
+      }
+
+      20% {
+        opacity: 1;
+        background: rgba(178,255,5,0.30);
+      }
+
+      100% {
+        opacity: 0;
+      }
+    }
+
+    @keyframes overrideMessage {
+      0% {
+        opacity: 0;
+        transform: scale(0.85);
+      }
+
+      35% {
+        opacity: 1;
+        transform: scale(1);
+      }
+
+      100% {
+        opacity: 0;
+        transform: scale(1.03);
+      }
+    }
+
+    /* =========================================================
+       RESPONSIVE
+    ========================================================= */
+
+    @media (max-width: 900px) {
+
+      .command-bar {
+        height: 62px;
+      }
+
+      .brand {
+        min-width: auto;
+      }
+
+      .brand img {
+        width: 85px;
+      }
+
+      .nav-links {
+        display: none;
+      }
+
+      .mobile-menu {
+        display: block;
+      }
+
+      .command-bar {
+        justify-content: space-between;
+      }
+
+      .register-btn {
+        margin-left: auto;
+      }
+
+      .battlegrounds {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 600px) {
+
+      .command-bar {
+        width: calc(100% - 20px);
+        top: 10px;
+
+        padding-left: 13px;
+        gap: 8px;
+      }
+
+      .register-btn {
+        padding: 11px 13px;
+        font-size: 8px;
+      }
+
+      .mobile-menu {
+        width: 38px;
+        height: 38px;
+      }
+
+      .hero-content {
+        width: calc(100% - 25px);
+      }
+
+      .hero-title {
+        font-size: clamp(4.1rem, 22vw, 7rem);
+      }
+
+      .hero-subtitle {
+        font-size: 8px;
+      }
+
+      .section {
+        padding: 80px 15px;
+      }
+
+      .status-top,
+      .arena-header {
+        display: block;
+      }
+
+      .status-code,
+      .arena-index {
+        margin-top: 20px;
+        text-align: left;
+      }
+
+      .countdown {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .time-unit:nth-child(2) {
+        border-right: 0;
+      }
+
+      .time-unit:nth-child(-n+2) {
+        border-bottom: 1px solid rgba(255,255,255,0.08);
+      }
+
+      .battlegrounds {
+        grid-template-columns: 1fr;
+      }
+
+      .battle-card {
+        min-height: 290px;
+      }
+
+      .footer-inner {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+    }
+
+    /* =========================================================
+       ACCESSIBILITY
+    ========================================================= */
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+        scroll-behavior: auto !important;
+        transition-duration: 0.001ms !important;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- =======================================================
+       COMMAND BAR
+  ======================================================== -->
+
+  <nav class="command-bar">
+
+    <a href="#" class="brand" aria-label="ROBOkriti 2026">
+      <img src="1000227064.png" alt="AWES Logo">
+    </a>
+
+    <div class="nav-links">
+      <a href="#arena">[01 // ARENA]</a>
+      <a href="#directives">[02 // DIRECTIVES]</a>
+      <a href="#roster">[03 // ROSTER]</a>
+      <a href="#comms">[04 // COMMS]</a>
+    </div>
+
+    <button class="register-btn" onclick="initiateRegistration()">
+      INITIATE REGISTRATION
+    </button>
+
+    <button class="mobile-menu" aria-label="Menu" onclick="toggleMobileNav()">
+      ☰
+    </button>
+
+  </nav>
+
+
+  <!-- =======================================================
+       HERO
+  ======================================================== -->
+
+  <main>
+
+    <section class="hero" id="arena">
+
+      <div class="hero-video">
+        <iframe
+          src="https://player.cloudinary.com/embed/?cloud_name=c1ihgwyx&public_id=Robot_powering_up_in_arena_202608261159&autoplay=true&muted=true&loop=true&controls=false"
+          title="ROBOkriti Robotics Arena"
+          allow="autoplay; fullscreen"
+          allowfullscreen>
+        </iframe>
+      </div>
+
+      <div class="hero-grid"></div>
+
+      <div class="hero-content">
+
+        <div class="system-label">
+          <span class="system-dot"></span>
+          ARENA SYSTEM // ONLINE
+        </div>
+
+        <h1 class="hero-title">
+          <span class="hollow">ROBO</span>
+          <span class="solid">KRITI</span>
+        </h1>
+
+        <p class="hero-subtitle">
+          A powerful, energetic tech battle // inter-class robotics competition
+          // army public school lbs marg // lucknow
+        </p>
+
+      </div>
+
+
+      <!-- LIVE TICKER -->
+
+      <div class="ticker">
+
+        <div class="ticker-track">
+
+          <div class="ticker-item">
+            // <span>OCT 8 2026</span> //
+            ARMY PUBLIC SCHOOL LBS MARG //
+            <span>4 BATTLEGROUNDS</span> //
+            ENTRY STATUS: OPEN //
+          </div>
+
+          <div class="ticker-item">
+            // <span>OCT 8 2026</span> //
+            ARMY PUBLIC SCHOOL LBS MARG //
+            <span>4 BATTLEGROUNDS</span> //
+            ENTRY STATUS: OPEN //
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         SYSTEM STATUS / COUNTDOWN
+    ====================================================== -->
+
+    <section class="section status-section" id="directives">
+
+      <div class="section-inner">
+
+        <div class="status-top">
+
+          <div>
+            <div class="eyebrow">// SYSTEM STATUS</div>
+
+            <h2 class="section-heading">
+              LAUNCH<br>
+              SEQUENCE
+            </h2>
+          </div>
+
+          <div class="status-code">
+            TARGET: 08.10.2026<br>
+            STATUS: <span style="color:#B2FF05;">COUNTING</span><br>
+            PROTOCOL: RK-26
+          </div>
+
+        </div>
+
+
+        <div class="countdown">
+
+          <div class="time-unit">
+            <div class="time-value" id="days">00</div>
+            <div class="time-label">DAYS</div>
+          </div>
+
+          <div class="time-unit">
+            <div class="time-value" id="hours">00</div>
+            <div class="time-label">HOURS</div>
+          </div>
+
+          <div class="time-unit">
+            <div class="time-value" id="minutes">00</div>
+            <div class="time-label">MINUTES</div>
+          </div>
+
+          <div class="time-unit">
+            <div class="time-value" id="seconds">00</div>
+            <div class="time-label">SECONDS</div>
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         BATTLEGROUNDS
+    ====================================================== -->
+
+    <section class="section arena-section" id="roster">
+
+      <div class="section-inner">
+
+        <div class="arena-header">
+
+          <div>
+            <div class="eyebrow">// BATTLEGROUNDS</div>
+
+            <h2 class="section-heading">
+              CHOOSE<br>
+              YOUR ARENA
+            </h2>
+          </div>
+
+          <div class="arena-index">
+            04 ACTIVE PROTOCOLS<br>
+            RK//ARENA//2026
+          </div>
+
+        </div>
+
+
+        <div class="battlegrounds">
+
+          <!-- RACE -->
+
+          <article class="battle-card">
+
+            <div class="card-number">
+              01 // PROTOCOL
+            </div>
+
+            <div class="card-orbit"></div>
+
+            <h3 class="card-title">
+              ROBO<br>RACE
+            </h3>
+
+            <div class="card-status">
+              &lt;STATUS: LIVE PROTOCOLS&gt;
+            </div>
+
+          </article>
+
+
+          <!-- WAR -->
+
+          <article class="battle-card">
+
+            <div class="card-number">
+              02 // PROTOCOL
+            </div>
+
+            <div class="card-orbit"></div>
+
+            <h3 class="card-title">
+              ROBO<br>WAR
+            </h3>
+
+            <div class="card-status">
+              &lt;STATUS: LIVE PROTOCOLS&gt;
+            </div>
+
+          </article>
+
+
+          <!-- TUG OF WAR -->
+
+          <article class="battle-card">
+
+            <div class="card-number">
+              03 // PROTOCOL
+            </div>
+
+            <div class="card-orbit"></div>
+
+            <h3 class="card-title">
+              ROBO TUG<br>OF WAR
+            </h3>
+
+            <div class="card-status">
+              &lt;STATUS: LIVE PROTOCOLS&gt;
+            </div>
+
+          </article>
+
+
+          <!-- SOCCER -->
+
+          <article class="battle-card soccer">
+
+            <div class="card-number">
+              04 // PROTOCOL
+            </div>
+
+            <div class="card-orbit"></div>
+
+            <h3 class="card-title">
+              ROBO<br>SOCCER
+            </h3>
+
+            <div class="card-status">
+              &lt;STATUS: ENCRYPTED_COMING_SOON&gt;
+            </div>
+
+          </article>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         COMMS
+    ====================================================== -->
+
+    <section class="section" id="comms">
+
+      <div class="section-inner">
+
+        <div class="eyebrow">// COMMUNICATIONS</div>
+
+        <h2 class="section-heading">
+          READY TO<br>
+          ENTER THE ARENA?
+        </h2>
+
+        <p class="section-description">
+          Assemble your team. Engineer your machine. Enter the arena.
+          The protocol begins October 8, 2026.
+        </p>
+
+        <br>
+
+        <button
+          class="register-btn"
+          onclick="initiateRegistration()"
+          style="margin-top:15px;"
+        >
+          INITIATE REGISTRATION →
+        </button>
+
+      </div>
+
+    </section>
+
+  </main>
+
+
+  <!-- =======================================================
+       FOOTER
+  ======================================================== -->
+
+  <footer>
+
+    <div class="footer-inner">
+
+      <div class="footer-brand">
+        ROBO<span>KRITI</span> 2026
+      </div>
+
+      <div class="footer-code">
+        SYSTEM // RK-26 // ARMY PUBLIC SCHOOL LBS MARG // LUCKNOW
+      </div>
+
+    </div>
+
+  </footer>
+
+
+  <!-- =======================================================
+       SYSTEM OVERRIDE EASTER EGG
+  ======================================================== -->
+
+  <div class="override" id="override">
+
+    <div class="override-message">
+      SYSTEM OVERRIDE: TINKERING LAB ONLINE.
+    </div>
+
+  </div>
+
+
+  <script>
+
+    /* =========================================================
+       COUNTDOWN
+    ========================================================= */
+
+    // Event target:
+    // October 8, 2026 at 00:00:00 local time
+
+    const targetDate = new Date(2026, 9, 8, 0, 0, 0).getTime();
+
+    function updateCountdown() {
+
+      const now = new Date().getTime();
+
+      const difference = targetDate - now;
+
+      if (difference <= 0) {
+
+        document.getElementById("days").textContent = "00";
+        document.getElementById("hours").textContent = "00";
+        document.getElementById("minutes").textContent = "00";
+        document.getElementById("seconds").textContent = "00";
+
+        return;
+      }
+
+      const days = Math.floor(
+        difference / (1000 * 60 * 60 * 24)
+      );
+
+      const hours = Math.floor(
+        (difference / (1000 * 60 * 60)) % 24
+      );
+
+      const minutes = Math.floor(
+        (difference / (1000 * 60)) % 60
+      );
+
+      const seconds = Math.floor(
+        (difference / 1000) % 60
+      );
+
+      document.getElementById("days").textContent =
+        String(days).padStart(2, "0");
+
+      document.getElementById("hours").textContent =
+        String(hours).padStart(2, "0");
+
+      document.getElementById("minutes").textContent =
+        String(minutes).padStart(2, "0");
+
+      document.getElementById("seconds").textContent =
+        String(seconds).padStart(2, "0");
+    }
+
+    updateCountdown();
+
+    setInterval(updateCountdown, 1000);
+
+
+    /* =========================================================
+       REGISTRATION CTA
+    ========================================================= */
+
+    function initiateRegistration() {
+
+      // Change this when registration.html is ready.
+      window.location.href = "registration.html";
+
+    }
+
+
+    /* =========================================================
+       MOBILE MENU
+    ========================================================= */
+
+    function toggleMobileNav() {
+
+      const nav = document.querySelector(".nav-links");
+
+      if (nav.style.display === "flex") {
+
+        nav.style.display = "";
+
+      } else {
+
+        nav.style.display = "flex";
+
+        nav.style.position = "absolute";
+        nav.style.top = "75px";
+        nav.style.left = "0";
+        nav.style.right = "0";
+
+        nav.style.padding = "20px";
+
+        nav.style.flexDirection = "column";
+        nav.style.alignItems = "flex-start";
+
+        nav.style.background = "rgba(8,8,8,0.96)";
+        nav.style.border = "1px solid rgba(255,255,255,0.10)";
+        nav.style.borderRadius = "20px";
+
+        nav.style.backdropFilter = "blur(20px)";
+      }
+
+    }
+
+
+    /* =========================================================
+       3D CARD TILT
+    ========================================================= */
+
+    const cards = document.querySelectorAll(".battle-card");
+
+    cards.forEach(card => {
+
+      card.addEventListener("mousemove", event => {
+
+        if (window.innerWidth < 700) return;
+
+        const rect = card.getBoundingClientRect();
+
+        const x = event.clientX - rect.left;
+        const y = event.clientY - rect.top;
+
+        const centerX = rect.width / 2;
+        const centerY = rect.height / 2;
+
+        const rotateX =
+          ((y - centerY) / centerY) * -3;
+
+        const rotateY =
+          ((x - centerX) / centerX) * 3;
+
+        card.style.transform =
+          `perspective(900px)
+           rotateX(${rotateX}deg)
+           rotateY(${rotateY}deg)
+           translateY(-4px)`;
+
+      });
+
+      card.addEventListener("mouseleave", () => {
+
+        card.style.transform =
+          "perspective(900px) rotateX(0deg) rotateY(0deg) translateY(0)";
+
+      });
+
+    });
+
+
+    /* =========================================================
+       ROBO EASTER EGG
+       Type R O B O anywhere on the page
+    ========================================================= */
+
+    const secretCode = ["r", "o", "b", "o"];
+
+    let codePosition = 0;
+
+    document.addEventListener("keydown", event => {
+
+      const key = event.key.toLowerCase();
+
+      if (key === secretCode[codePosition]) {
+
+        codePosition++;
+
+        if (codePosition === secretCode.length) {
+
+          activateSystemOverride();
+
+          codePosition = 0;
+
+        }
+
+      } else {
+
+        codePosition = key === secretCode[0] ? 1 : 0;
+
+      }
+
+    });
+
+
+    function activateSystemOverride() {
+
+      const override =
+        document.getElementById("override");
+
+      override.classList.remove("active");
+
+      // Force animation restart
+      void override.offsetWidth;
+
+      override.classList.add("active");
+
+      setTimeout(() => {
+
+        override.classList.remove("active");
+
+      }, 600);
+
+    }
+
+
+    /* =========================================================
+       ESC KEY
+    ========================================================= */
+
+    document.addEventListener("keydown", event => {
+
+      if (event.key === "Escape") {
+
+        document
+          .getElementById("override")
+          .classList.remove("active");
+
+      }
+
+    });
+
+  </script>
+
+</body>
+</html>
